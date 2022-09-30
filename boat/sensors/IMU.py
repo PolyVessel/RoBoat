@@ -12,19 +12,27 @@ class IMU:
         return cls.instance
 
     def init(self):
-        mpu9250.initialize(enable_magnetometer=True)
+        mpu9250.initialize(enable_dmp = True, dmp_sample_rate = 4, enable_magnetometer=True)
         self.initialized = True
 
     def poll_sensor(self):
-        if rcpy.get_state() != rcpy.RUNNING:
-            rcpy.run()
+        if not self.initialized:
+            self.init()
 
-        if rcpy.get_state == rcpy.RUNNING:
-            temp = mpu9250.read_imu_temp()
-            data = mpu9250.read()
+        imu_data = mpu9250.read()
+        temp = mpu9250.read_imu_temp()
 
-            print("Data: {}\n\nTemp: {}".format(data, temp))
+        data = {
+            "heading": imu_data["head"],
+            "accel": imu_data["accel"],
+            "gyro": imu_data["gyro"],
+            "mag": imu_data["mag"],
+            "tb": imu_data["tb"],
+            "temp": temp,
+        }
 
-        else:
-            # Add more robust logs here
-            print("RCPY is not RUNNING, even though we set it to run")
+        return data
+
+if __name__ == "__main__":
+    rcpy.set_state(rcpy.RUNNING)
+    print(IMU().poll_sensor())
