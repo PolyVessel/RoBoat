@@ -1,1 +1,20 @@
+syntax = "proto3";
 
+package roboat;
+
+service Heartbeat {
+  rpc SendHeartbeat (BoatHeartbeat) returns (BoatHeartbeatAcknowledge) {}
+}
+
+enum BoatStatus {
+  UNKNOWN = 0;
+  OK = 1;
+  ERR = 2;
+}
+
+message BoatHeartbeat {
+  optional BoatStatus status = 1;
+  optional string err_message = 2;
+}
+
+message BoatHeartbeatAcknowledge {}
