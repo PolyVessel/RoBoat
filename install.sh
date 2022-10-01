@@ -12,8 +12,12 @@
 sudo apt-get update && sudo apt-get upgrade
 
 ###
-# Adafruit-BBIO is pretty cool. Let's install it.
+# Install Python
 ###
 sudo apt-get update
 sudo apt-get install build-essential python3-dev python3-pip -y
-sudo pip3 install Adafruit_BBIO
+
+###
+# Lets install all of our Python Libraries
+###
+sudo pip3 install -r requirements.txt
