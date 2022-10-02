@@ -2,3 +2,6 @@ rcpy==0.5.1
 Adafruit-BBIO==1.1.1
 grpcio==1.49.1
 grpcio-tools==1.49.1
+pyserial==3.5
+sparkfun-ublox-gps==1.1.4
+spidev==3.5
