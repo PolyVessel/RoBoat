@@ -12,10 +12,23 @@ class IMU:
         return cls.instance
 
     def init(self):
+        """Initializes the IMU. Is usually done automatically from poll_sensor()"""
         mpu9250.initialize(enable_dmp = True, dmp_sample_rate = 4, enable_magnetometer=True)
         self.initialized = True
 
+
     def poll_sensor(self):
+        """Polls the IMU for sensor data, initializing the IMU if needed.
+
+        :returns Dictionary:
+            "heading" -> heading from magnetometer (radians)
+            "accel"   -> 3-axis accelerations (m/s^2)
+            "gyro"    -> 3-axis angular velocities (degree/s)
+            "mag"     -> 3D magnetic field vector in (μT)
+            "tb"      -> pitch/roll/yaw X/Y/Z angles (radians)
+            "temp"    -> imu temperature in deg C
+        """
+
         if not self.initialized:
             self.init()
 
