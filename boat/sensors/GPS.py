@@ -65,6 +65,20 @@ class GPS:
             print(err)
             return None
 
+    def update_system_clock(self):
+        gps_data = self.poll_sensor()
+        time_data = gps_data["current_time_utc"]
+
+        # gpsd.utc is formatted like"2015-04-01T17:32:04.000Z"
+        # convert it to a form the date -u command will accept: "20140401 17:32:04"
+        # use python slice notation [start:end] (where end desired end char + 1)
+        #   gpsd.utc[0:4] is "2015"
+        #   gpsd.utc[5:7] is "04"
+        #   gpsd.utc[8:10] is "01"
+        gpsutc = time_data.year + time_data.month + time_data.day + " " ti
+        os.system('sudo date -u --set="{}"'.format())
+
+
     def __del__(self):
         """Closes serial port when done"""
         self.serial_port.close()
