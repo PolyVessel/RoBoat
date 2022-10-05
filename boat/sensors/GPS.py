@@ -1,3 +1,4 @@
+import os
 from ublox_gps import UbloxGps
 import serial
 from datetime import datetime, timezone
@@ -65,18 +66,17 @@ class GPS:
             print(err)
             return None
 
+    #TODO: Requires root Privledges, add a check into main program that this is called as root
     def update_system_clock(self):
+        """Accurate to ~1s, because GPS Library only gives precision
+        up to seconds."""
+
         gps_data = self.poll_sensor()
         time_data = gps_data["current_time_utc"]
 
-        # gpsd.utc is formatted like"2015-04-01T17:32:04.000Z"
-        # convert it to a form the date -u command will accept: "20140401 17:32:04"
-        # use python slice notation [start:end] (where end desired end char + 1)
-        #   gpsd.utc[0:4] is "2015"
-        #   gpsd.utc[5:7] is "04"
-        #   gpsd.utc[8:10] is "01"
-        gpsutc = "{}{}{} {}:{}:{}".format(time_data.year, time_data.month, time_data.day, time_data.hour, time_data.minute, time_data.second)
-        os.system('sudo date -u --set="{}"'.format())
+        # convert time_data to a form the date -u command will accept: "20140401 17:32:04"
+        gps_utc = "{:04d}{:02d}{:02d} {:02d}:{:02d}:{:02d}".format(time_data.year, time_data.month, time_data.day, time_data.hour, time_data.minute, time_data.second)
+        os.system('sudo date -u --set="{}"'.format(gps_utc))
 
 
     def __del__(self):
