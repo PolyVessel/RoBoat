@@ -24,7 +24,7 @@ class GPS:
         """Polls the GPS for sensor data, initializing the GPS if needed.
         More data in https://cdn.sparkfun.com/assets/0/9/4/3/5/u-blox8-M8_ReceiverDescrProtSpec__UBX-13003221__Public.pdf
 
-        :returns Dictionary:
+        Returns Dictionary:
           "lat"  -> Latitude in Deg
           "lon" -> Longitude in Deg
           "current_time_utc" -> Python datetime obj of current time in UTC
