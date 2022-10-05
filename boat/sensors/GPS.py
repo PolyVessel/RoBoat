@@ -75,7 +75,7 @@ class GPS:
         #   gpsd.utc[0:4] is "2015"
         #   gpsd.utc[5:7] is "04"
         #   gpsd.utc[8:10] is "01"
-        gpsutc = time_data.year + time_data.month + time_data.day + " " + time_data.hour + ":" + time_data.minute + ":" + time_data.second
+        gpsutc = "{}{}{} {}:{}:{}".format(time_data.year, time_data.month, time_data.day, time_data.hour, time_data.minute, time_data.second)
         os.system('sudo date -u --set="{}"'.format())
 
 
