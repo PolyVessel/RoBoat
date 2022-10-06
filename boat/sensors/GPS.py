@@ -1,12 +1,16 @@
+from math import e
 import os
 from ublox_gps import UbloxGps
 import serial
 from datetime import datetime, timezone
+from .util import TimeoutException, time_limit
 
-# TODO: Will wait forever if no GPS is connected
+class GPSNoSignal(Exception): pass
+
 class GPS:
     gps = None
     serial_port = None
+    GPS_TIMEOUT_SEC = 15
 
     # Singleton Pattern (we only have 1 GPS module)
     def __new__(cls):
@@ -20,23 +24,8 @@ class GPS:
                                   parity=serial.PARITY_NONE, bytesize=serial.EIGHTBITS)
         self.gps = UbloxGps(self.serial_port)
 
-    def poll_sensor(self):
-        """Polls the GPS for sensor data, initializing the GPS if needed.
-        More data in https://cdn.sparkfun.com/assets/0/9/4/3/5/u-blox8-M8_ReceiverDescrProtSpec__UBX-13003221__Public.pdf
-
-        Returns Dictionary:
-          "lat"  -> Latitude in Deg
-          "lon" -> Longitude in Deg
-          "current_time_utc" -> Python datetime obj of current time in UTC
-          "headMot" -> Heading of Motion in deg
-          "numSV" -> Number of Satellites used in Solution,
-          "gSpeed": Ground Speed in mm/s (2D)
-          "sAcc": Speed Accuracy in mm/s
-          "hAcc": Horizontal Accuracy in mm
-          "headAcc": Accuracy of Heading in deg
-        """
-
-
+    def __getGPSData(self):
+        
         # Init if not already
         if self.gps is None or self.serial_port is None:
             self.init()
@@ -60,29 +49,70 @@ class GPS:
                 "headAcc": gps_data.headAcc
 
             }
-            return ret_data
+
+            
+            if ret_data["numSV"] == 0:
+                raise GPSNoSignal()
+            else:
+                return ret_data
         except (ValueError, IOError) as err:
             # TODO: Do a smarter log here
             print(err)
             return None
 
-    #TODO: Requires root Privledges, add a check into main program that this is called as root
+    def poll_sensor(self):
+        """Polls the GPS for sensor data, initializing the GPS if needed.
+        More data in https://cdn.sparkfun.com/assets/0/9/4/3/5/u-blox8-M8_ReceiverDescrProtSpec__UBX-13003221__Public.pdf
+
+        May raise Expected Exceptions: 
+            TimeoutException, GPSNoSignal
+
+        Also may raise critical errors (I don't know when these are called):
+            ValueError, IOError
+
+        Returns Dictionary:
+          "lat"  -> Latitude in Deg
+          "lon" -> Longitude in Deg
+          "current_time_utc" -> Python datetime obj of current time in UTC
+          "headMot" -> Heading of Motion in deg
+          "numSV" -> Number of Satellites used in Solution,
+          "gSpeed": Ground Speed in mm/s (2D)
+          "sAcc": Speed Accuracy in mm/s
+          "hAcc": Horizontal Accuracy in mm
+          "headAcc": Accuracy of Heading in deg
+        """
+
+        with time_limit(self.GPS_TIMEOUT_SEC):
+            return GPS().__getGPSData()
+
     def update_system_clock(self):
         """Accurate to ~1s, because GPS Library only gives precision
-        up to seconds."""
+        up to seconds.
+        
+        Requires root privledges."""
 
-        gps_data = self.poll_sensor()
-        time_data = gps_data["current_time_utc"]
+        try:
+            gps_data = self.poll_sensor()
+            time_data = gps_data["current_time_utc"]
 
-        # convert time_data to a form the date -u command will accept: "20140401 17:32:04"
-        gps_utc = "{:04d}{:02d}{:02d} {:02d}:{:02d}:{:02d}".format(time_data.year, time_data.month, time_data.day, time_data.hour, time_data.minute, time_data.second)
-        os.system('sudo date -u --set="{}"'.format(gps_utc))
+            # convert time_data to a form the date -u command will accept: "20140401 17:32:04"
+            gps_utc = "{:04d}{:02d}{:02d} {:02d}:{:02d}:{:02d}".format(time_data.year, time_data.month, time_data.day, time_data.hour, time_data.minute, time_data.second)
+            os.system('sudo date -u --set="{}" > /dev/null'.format(gps_utc))
+
+
+        #TODO: Better Logs here, this should be logged
+        # Non critical, Expected Errors
+        except TimeoutException as e:
+            print("GPS Module Not Connected")
+        except GPSNoSignal as e:
+            print("No GPS Signal")
+        
+        except ValueError as e:
+            print(e)
+        except IOError as e:
+            print(e)
 
 
     def __del__(self):
         """Closes serial port when done"""
         self.serial_port.close()
-
-
-if __name__ == '__main__':
-    print(GPS().poll_sensor())
