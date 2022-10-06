@@ -5,6 +5,10 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
+
+# Moves working directory to this file's directory
+cd "$(dirname "$0")"
+
 #################
 # Let's install some prereqs for our BeagleBone.
 # Are you ready?
