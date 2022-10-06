@@ -5,3 +5,5 @@ grpcio-tools==1.49.1
 pyserial==3.5
 sparkfun-ublox-gps==1.1.4
 spidev==3.5
+pypubsub==4.0.3
+pytest==7.1.3
