@@ -11,10 +11,9 @@ fi
 ################
 
 ###
-# Set up a locale which supports UTF-8 encoding
+# Install Updates
 ###
-
-apt-get update && sudo apt-get upgrade
+apt-get update -y && sudo apt-get upgrade -y
 
 ###
 # Install Python
