@@ -24,5 +24,6 @@ apt-get install build-essential python3-dev python3-pip -y
 
 ###
 # Lets install all of our Python Libraries
+# --no-cache-dir because this can fail from MemoryErrors without it
 ###
-pip3 install -r requirements.txt
+pip3 --no-cache-dir install -r requirements.txt
