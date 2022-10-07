@@ -209,6 +209,9 @@ pip-selfcheck.json
 # Keep recommended extensions
 !.vscode/extensions.json
 
+# Keep Settings for pytest
+!.vscode/settings.json
+
 # Local History for Visual Studio Code
 .history/
 
