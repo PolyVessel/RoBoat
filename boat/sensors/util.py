@@ -1,25 +1,18 @@
-import signal
 from contextlib import contextmanager
+import threading
+import _thread
 
-class TimeoutException(Exception): pass
+class TimeoutException(Exception):
+    pass
 
 @contextmanager
 def time_limit(seconds):
-    """Limits function to seconds in parameter
-    
-    Example:
-
-    try:
-        with time_limit(10):
-            long_function_call()
-    except TimeoutException as e:
-        print("Timed out!")"""
-
-    def signal_handler(signum, frame):
-        raise TimeoutException("Timed out!")
-    signal.signal(signal.SIGALRM, signal_handler)
-    signal.alarm(seconds)
+    timer = threading.Timer(seconds, lambda: _thread.interrupt_main())
+    timer.start()
     try:
         yield
+    except KeyboardInterrupt:
+        raise TimeoutException("Timed out for operation")
     finally:
-        signal.alarm(0)
+        # if the action ends in specified time, timer is canceled
+        timer.cancel()

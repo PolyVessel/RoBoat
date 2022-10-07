@@ -1,6 +1,6 @@
 {
     "python.testing.pytestArgs": [
-        "boat/tests"
+        "boat"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true

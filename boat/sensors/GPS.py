@@ -26,8 +26,9 @@ class GPS:
                                          parity=serial.PARITY_NONE, bytesize=serial.EIGHTBITS)
         self.gps = UbloxGps(self.serial_port)
 
-    def __getGPSData(self):
-        """Seperate Actually getting data for Unit testing"""
+    def priv_get_GPS_data(self):
+        """Do not Use Outside of GPS
+        Seperate Actually getting data for Unit testing"""
         # Init if not already
         if self.gps is None or self.serial_port is None:
             self.init()
@@ -59,7 +60,7 @@ class GPS:
         """
 
         with time_limit(self.GPS_TIMEOUT_SEC):
-            gps_data = GPS().__getGPSData()
+            gps_data = GPS().priv_get_GPS_data()
 
             current_date_time = datetime(gps_data.year, gps_data.month, gps_data.day,
                                         hour=gps_data.hour, minute=gps_data.min, second=gps_data.sec,
@@ -114,4 +115,7 @@ class GPS:
 
     def __del__(self):
         """Closes serial port when done"""
-        self.serial_port.close()
+        try:
+            self.serial_port.close()
+        except Exception as e:
+            pass #Expected for Unit tests
