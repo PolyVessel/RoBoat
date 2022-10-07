@@ -1,5 +1,4 @@
-import rcpy
-import rcpy.mpu9250 as mpu9250
+
 
 class IMU:
 
@@ -12,6 +11,9 @@ class IMU:
         return cls.instance
 
     def init(self):
+        import rcpy
+        import rcpy.mpu9250 as mpu9250
+        
         """Initializes the IMU. Is usually done automatically from poll_sensor()"""
         mpu9250.initialize(enable_dmp = True, dmp_sample_rate = 4, enable_magnetometer=True)
         self.initialized = True
