@@ -65,3 +65,56 @@ def test_gps_no_signal(monkeypatch):
 
     with pytest.raises(GPSNoSignal) as e_info:
             GPS().poll_sensor()
+
+def test_gps_other_data(monkeypatch):
+    def mock_gps_get_gps_data_other_data(self):
+        data = types.SimpleNamespace()
+        data.lon = 123.12932
+        data.lat = 456.21954
+        data.headMot = 29.2384
+        data.numSV = 15
+        data.gSpeed = 2382
+        data.sAcc = 152
+        data.hAcc = 325
+        data.headAcc = 452
+
+        # Just random data to appease datetime()
+        data.year = 2000
+        data.month = 1
+        data.day = 1
+        data.hour = 1
+        data.min = 1
+        data.sec = 1
+
+        return data
+
+    monkeypatch.setattr(GPS, "priv_get_GPS_data", mock_gps_get_gps_data_other_data)
+
+    gps_data =  GPS().poll_sensor();
+
+    assert gps_data["lon"]     == 123.12932
+    assert gps_data["lat"]     == 456.21954
+    assert gps_data["headMot"] == 29.2384
+    assert gps_data["numSV"]   == 15
+    assert gps_data["gSpeed"]  == 2382
+    assert gps_data["sAcc"]    == 152
+    assert gps_data["hAcc"]    == 325
+    assert gps_data["headAcc"] == 452
+
+def test_value_error(monkeypatch):
+    def mock_gps_value_error(self):
+        raise ValueError()
+    
+    monkeypatch.setattr(GPS, "priv_get_GPS_data", mock_gps_value_error)
+
+    with pytest.raises(ValueError) as e_info:
+        GPS().poll_sensor()
+
+def test_io_error(monkeypatch):
+    def mock_gps_io_error(self):
+        raise IOError()
+    
+    monkeypatch.setattr(GPS, "priv_get_GPS_data", mock_gps_io_error)
+
+    with pytest.raises(IOError) as e_info:
+        GPS().poll_sensor()

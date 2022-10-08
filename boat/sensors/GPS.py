@@ -28,7 +28,7 @@ class GPS:
 
     def priv_get_GPS_data(self):
         """Do not Use Outside of GPS
-        Seperate Actually getting data for Unit testing"""
+        Seperates Actually getting data for Unit testing"""
         # Init if not already
         if self.gps is None or self.serial_port is None:
             self.init()
