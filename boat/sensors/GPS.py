@@ -1,6 +1,8 @@
-import os
+from re import sub
+import subprocess
 from datetime import datetime, timezone
 from sensors.util import TimeoutException, time_limit
+import os
 
 
 class GPSNoSignal(Exception): pass
@@ -9,7 +11,7 @@ class GPSNoSignal(Exception): pass
 class GPS:
     gps = None
     serial_port = None
-    GPS_TIMEOUT_SEC = 15
+    GPS_TIMEOUT_SEC = 5
 
     # Singleton Pattern (we only have 1 GPS module)
     def __new__(cls):
@@ -25,6 +27,13 @@ class GPS:
         self.serial_port = serial.Serial('/dev/ttyS2', baudrate=9600, timeout=1, stopbits=serial.STOPBITS_ONE,
                                          parity=serial.PARITY_NONE, bytesize=serial.EIGHTBITS)
         self.gps = UbloxGps(self.serial_port)
+
+    def __del__(self):
+        """Closes serial port when done"""
+        try:
+            self.serial_port.close()
+        except Exception as e:
+            pass #Expected for Unit tests
 
     def priv_get_GPS_data(self):
         """Do not Use Outside of GPS
@@ -98,7 +107,13 @@ class GPS:
             gps_utc = "{:04d}{:02d}{:02d} {:02d}:{:02d}:{:02d}".format(time_data.year, time_data.month, time_data.day,
                                                                        time_data.hour, time_data.minute,
                                                                        time_data.second)
-            os.system('sudo date -u --set="{}" > /dev/null'.format(gps_utc))
+
+
+            # Checks if root, so we don't get a passwd prompt
+            if os.geteuid() != 0:
+                raise subprocess.CalledProcessError(1, "sudo")
+
+            subprocess.run(["sudo", "date", "-u", "--set={}".format(gps_utc)], timeout=2)
 
 
         # TODO: Better Logs here, this should be logged
@@ -107,15 +122,11 @@ class GPS:
             print("GPS Module Not Connected")
         except GPSNoSignal as e:
             print("No GPS Signal")
-
+        except subprocess.CalledProcessError as e:
+            print(e)
+        except subprocess.TimeoutExpired as e:
+            print(e)
         except ValueError as e:
             print(e)
         except IOError as e:
             print(e)
-
-    def __del__(self):
-        """Closes serial port when done"""
-        try:
-            self.serial_port.close()
-        except Exception as e:
-            pass #Expected for Unit tests

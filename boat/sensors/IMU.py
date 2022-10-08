@@ -1,4 +1,6 @@
 
+class IMUException(Exception):
+    pass
 
 class IMU:
 
@@ -14,15 +16,22 @@ class IMU:
         import rcpy
         import rcpy.mpu9250 as mpu9250
         
+        self.mpu9250 = mpu9250
+
         """Initializes the IMU. Is usually done automatically from poll_sensor()"""
+        rcpy.set_state(rcpy.RUNNING)
         mpu9250.initialize(enable_dmp = True, dmp_sample_rate = 4, enable_magnetometer=True)
         self.initialized = True
 
 
     def poll_sensor(self):
+        
         """Polls the IMU for sensor data, initializing the IMU if needed.
 
-        :returns Dictionary:
+        May Raise Critical Error:
+            IMUException
+
+        returns Dictionary:
             "heading" -> heading from magnetometer (radians)
             "accel"   -> 3-axis accelerations (m/s^2)
             "gyro"    -> 3-axis angular velocities (degree/s)
@@ -33,9 +42,12 @@ class IMU:
 
         if not self.initialized:
             self.init()
-
-        imu_data = mpu9250.read()
-        temp = mpu9250.read_imu_temp()
+        try:
+            imu_data = self.mpu9250.read()
+            temp = self.mpu9250.read_imu_temp()
+        except self.mpu9250.error as e:
+            # BETTER LOGGING
+            raise IMUException()
 
         data = {
             "heading": imu_data["head"],
@@ -49,5 +61,4 @@ class IMU:
         return data
 
 if __name__ == "__main__":
-    rcpy.set_state(rcpy.RUNNING)
     print(IMU().poll_sensor())
