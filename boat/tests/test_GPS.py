@@ -38,7 +38,7 @@ def test_gps_date_time_parse(monkeypatch):
 
     expected_date_time = datetime(2022, 2, 8, 16, 34, 25, tzinfo=timezone.utc)
 
-    assert GPS().poll_sensor()["current_time_utc"] == expected_date_time
+    assert GPS().poll_sensor().current_time_utc == expected_date_time
 
 def test_gps_no_signal(monkeypatch):
     def mock_gps_get_gps_data_return_no_sat(self):
@@ -92,14 +92,14 @@ def test_gps_other_data(monkeypatch):
 
     gps_data =  GPS().poll_sensor();
 
-    assert gps_data["lon"]     == 123.12932
-    assert gps_data["lat"]     == 456.21954
-    assert gps_data["headMot"] == 29.2384
-    assert gps_data["numSV"]   == 15
-    assert gps_data["gSpeed"]  == 2382
-    assert gps_data["sAcc"]    == 152
-    assert gps_data["hAcc"]    == 325
-    assert gps_data["headAcc"] == 452
+    assert gps_data.lon     == 123.12932
+    assert gps_data.lat     == 456.21954
+    assert gps_data.headMot == 29.2384
+    assert gps_data.numSV   == 15
+    assert gps_data.gSpeed  == 2382
+    assert gps_data.sAcc    == 152
+    assert gps_data.hAcc    == 325
+    assert gps_data.headAcc == 452
 
 def test_value_error(monkeypatch):
     def mock_gps_value_error(self):
