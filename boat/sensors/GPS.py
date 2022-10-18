@@ -7,6 +7,8 @@ import os
 
 class GPSNoSignal(Exception): pass
 
+PORT = "/dev/ttyS2"
+
 class GPSData():
     def __init__(self, current_time_utc, lon, lat, 
         headMot, numSV, gSpeed, sAcc, hAcc, headAcc):
@@ -37,7 +39,7 @@ class GPS:
         import serial
 
         # Connect GPS module to GPS UART
-        self.serial_port = serial.Serial('/dev/ttyS2', baudrate=9600, timeout=1, stopbits=serial.STOPBITS_ONE,
+        self.serial_port = serial.Serial(PORT, baudrate=9600, timeout=1, stopbits=serial.STOPBITS_ONE,
                                          parity=serial.PARITY_NONE, bytesize=serial.EIGHTBITS)
         self.gps = UbloxGps(self.serial_port)
 
