@@ -6,11 +6,13 @@ def takes_1_second():
     sleep(1)
 
 
+@pytest.mark.slow
 def test_going_over_time_limit():
     with pytest.raises(TimeoutException) as e_info:
         with time_limit(0.5):
             takes_1_second()
 
+@pytest.mark.slow
 def test_under_time_limit():
     try:
         with time_limit(5):

@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 import pytest
 import types
 
+@pytest.mark.slow
 def test_timeout_for_gps_taking_too_long(monkeypatch):
     def mock_gps_get_data_forever(self):
         while True:

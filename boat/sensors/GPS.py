@@ -22,8 +22,6 @@ class GPSData():
         self.headAcc = headAcc
 
 class GPS:
-    gps = None
-    serial_port = None
     GPS_TIMEOUT_SEC = 5
 
     # Singleton Pattern (we only have 1 GPS module)
@@ -59,7 +57,7 @@ class GPS:
 
         
 
-    def poll_sensor(self):
+    def poll_sensor(self) -> GPSData:
         """Polls the GPS for sensor data, initializing the GPS if needed.
         More data in https://cdn.sparkfun.com/assets/0/9/4/3/5/u-blox8-M8_ReceiverDescrProtSpec__UBX-13003221__Public.pdf
 
@@ -121,7 +119,7 @@ class GPS:
 
 
             # Checks if root, so we don't get a passwd prompt
-            if os.geteuid() != 0:
+            if os.geteuid() != 0:  # type: ignore
                 raise subprocess.CalledProcessError(1, "sudo")
 
             subprocess.run(["sudo", "date", "-u", "--set={}".format(gps_utc)], timeout=2)
